@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mentor Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+
+    <style>
+        body {
+            background-color: #5997d6;
+            color: #212529;
+        }
+
+        .container {
+            margin-top: 20px;
+        }
+
+        .nav-tabs {
+            margin-bottom: 20px;
+        }
+
+        .tab-content {
+            padding: 20px;
+            background-color: rgb(231, 124, 124);
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .button-group {
+            margin-top: 20px;
+        }
+
+        .tab-content {
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #attendance-content {
+            background-color: rgb(240, 135, 135);
+            /* Set color only for attendance content */
+        }
+
+        #search-results {
+            margin-top: 0;
+            /* Ensure no top margin */
+            padding-top: 0;
+            /* Ensure no top padding */
+        }
+
+        .student-list,
+        .chat-container {
+            display: none;
+        }
+
+        .chat-window {
+            height: 400px;
+            /* Adjusted height */
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #f1f1f1;
+        }
+
+        .chat-message {
+            margin-bottom: 15px;
+            position: relative;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            max-width: 80%;
+        }
+
+        .chat-message.student {
+            text-align: left;
+            background-color:lightgray;
+            color:  #f0440a;
+          
+            margin-left: 0;
+            margin-right: auto;
+        }
+
+        .chat-message.mentor {
+            text-align: right;
+            background-color: #6fbfcc;
+            color: #1e1edd;
+            margin-left: auto;
+            margin-right: 0;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .date-label {
+            text-align: center;
+            margin: 10px 0;
+            font-weight: bold;
+            color: #6c757d;
+        }
+
+        .chat-form {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .chat-form input[type="text"] {
+            width: calc(100% - 100px);
+        }
+
+        .chat-form button {
+            width: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <ul class="nav nav-tabs" id="dashboard-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" id="attendance-tab" href="#">Attendance</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="student-attendance-tab" href="#">Student Attendance</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="search-tab" href="#">Search</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="messages-tab" href="#">Messages</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="dashboard-content">
+            <!-- Attendance Tab -->
+            <div class="tab-pane fade show active" id="attendance-content">
+                <h2 class="text-center">Attendance List</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Date</th>
+                            <th>Attendance</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendance-list">
+                        <!-- Rows will be dynamically added here -->
+                    </tbody>
+                </table>
+                <div class="button-group text-center" id="button-group" style="display: none;">
+                    <button class="btn btn-primary" onclick="saveAttendance()">Save</button>
+                    <button class="btn btn-secondary" onclick="cancelAttendance()">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Student Attendance Tab -->
+            <div class="tab-pane fade" id="student-attendance-content">
+                <h2 class="text-center">Student Attendance</h2>
+                <p id="current-date"></p>
+                <div id="present-list">
+                    <h3>Present List</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Date</th>
+                                <th>Attendance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="present-list-body">
+                            <!-- Rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="absent-list">
+                    <h3>Absent List</h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Date</th>
+                                <th>Attendance</th>
+                                <th>Purpose</th>
+                            </tr>
+                        </thead>
+                        <tbody id="absent-list-body">
+                            <!-- Rows will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div class="tab-pane fade" id="search-content">
+                <h2 class="text-center">Search Student Attendance</h2>
+                <form id="search-form" class="mb-3">
+                    <label for="search-rollno" class="form-label">Enter Student ID:</label>
+                    <input type="text" class="form-control" id="search-rollno" required />
+                    <span class="error" id="stdId"></span>
+                    <div class="text-center mt-2">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+                <div id="search-results" class="mt-4" style="display: none;">
+                    <h3>Search Results</h3>
+                    <div id="search-present-list">
+                        <h4>Present List</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Date</th>
+                                    <th>Attendance</th>
+                                </tr>
+                            </thead>
+                            <tbody id="search-present-body">
+                                <!-- Rows will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="search-absent-list">
+                        <h4>Absent List</h4>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Date</th>
+                                    <th>Attendance</th>
+                                    <th>Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody id="search-absent-body">
+                                <!-- Rows will be dynamically added here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="messages-content">
+                <h2 class="text-center">Messages</h2>
+                <div class="student-list">
+                    <h3 class="text-center">Students</h3>
+                    <div id="student-list" class="list-group">
+                        <!-- Student list will be dynamically added here -->
+                    </div>
+                </div>
+                <div class="chat-container">
+                    <button id="back-to-students" class="btn btn-secondary back-button">Back to Students</button>
+                    <h3 class="text-center" id="chat-header">Select a student to start chatting</h3>
+                    <div class="chat-window" id="chat-window"></div>
+                    <form id="chat-form" class="chat-form">
+                        <input type="text" id="chat-input" placeholder="Type a message..." required>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const savedDates = new Set(); // Track saved dates
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date();
+
+
+            const formattedDate = today.toISOString().split('T')[0];
+            
+            document.getElementById('current-date').innerText = `Date: ${formattedDate}`;
+            showDefaultView(formattedDate);
+            document.getElementById('search-form').addEventListener('submit', function (event) {
+                event.preventDefault(); // Prevent the default form submission
+                searchStudent(); // Call the function to search for the student
+            });
+        });
+
+        document.getElementById('attendance-tab').addEventListener('click', () => {
+            showContent('attendance-content');
+            setActiveTab('attendance-tab');
+        });
+
+        document.getElementById('student-attendance-tab').addEventListener('click', () => {
+            showContent('student-attendance-content');
+            setActiveTab('student-attendance-tab');
+            loadStudentAttendance();  // Load data when tab is clicked
+        });
+
+        document.getElementById('search-tab').addEventListener('click', () => {
+            showContent('search-content');
+            setActiveTab('search-tab');
+        });
+
+        document.getElementById('messages-tab').addEventListener('click', () => {
+            showContent('messages-content');
+            setActiveTab('messages-tab');
+        });
+
+        function showContent(contentId) {
+            const tabsContent = ['attendance-content', 'student-attendance-content', 'search-content', 'messages-content'];
+            tabsContent.forEach(id => {
+                const contentElement = document.getElementById(id);
+                if (id === contentId) {
+                    contentElement.classList.add('show', 'active');
+                } else {
+                    contentElement.classList.remove('show', 'active');
+                }
+            });
+        }
+
+        function setActiveTab(tabId) {
+            const tabIds = ['attendance-tab', 'student-attendance-tab', 'search-tab', 'messages-tab'];
+            tabIds.forEach(id => {
+                const tabElement = document.getElementById(id);
+                if (id === tabId) {
+                    tabElement.classList.add('active');
+                } else {
+                    tabElement.classList.remove('active');
+                }
+            });
+        }
+
+        function showDefaultView(date) {
+            showContent('attendance-content');
+            fetchAttendanceData(date);
+        }
+
+        function getToken() {
+            const token = JSON.parse(localStorage.getItem("token"))
+            return token ? `Bearer ${token.token}` : '';
+        }
+
+
+        function fetchAttendanceData(date) {
+            fetch('http://localhost:5000/attendence-list', {
+                method: 'GET',
+                headers: {
+                    'Authorization': getToken() // Include token if needed for authentication
+                }
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    const listEle = document.getElementById('attendance-list');
+                    listEle.innerHTML = ''; // Clear existing content
+
+                    if (data.length === 0) {
+                        listEle.innerHTML = '<tr><td colspan="4" class="text-center">No data available</td></tr>';
+                        document.getElementById('button-group').style.display = 'none';
+                    } else {
+                        // Iterate over the list of students
+                        data.forEach(d => {
+                            listEle.innerHTML += `
+                    <tr>
+                        <td>${d.rollno}</td>
+                        <td>${date}</td>
+                        <td>
+                            <select onchange='updateAttendance(this)' data-rollno='${d.rollno}'>
+                                <option value='-1'>select</option>
+                                <option value='present'>Present</option>
+                                <option value='absent'>Absent</option>
+                            </select>
+                        </td>
+                        <td><p contenteditable="true" data-rollno='${d.rollno}'></p></td>
+                    </tr>
+                `;
+                        });
+                        checkIfAllFieldsAreFilled();
+                    }
+
+                    // Update button visibility based on saved dates
+                    updateButtonVisibility(date);
+                })
+                .catch(err => {
+                    console.error('Error fetching attendance list:', err);
+                });
+        }
+
+        let hasAlertedForDuplicate = false;  // To prevent repeated alerts for duplicates
+        let hasAlertedForSave = false;  // To prevent repeated save success alerts
+        // Track dates that have been saved
+
+        function saveAttendance() {
+            const rows = document.querySelectorAll('#attendance-list tr');
+            let alertSave = false;
+
+            Array.from(rows).forEach(row => {
+                const rollno = row.children[0].innerText;
+                const date = row.children[1].innerText;
+                const attendance = row.querySelector('select').value;
+                const purpose = row.querySelector('td:last-child p').innerText.trim();
+
+                // Prevent saving if attendance is not selected
+                if (attendance === '-1') {
+                    alert('Please select attendance status for all students.');
+                    return;
+                }
+
+                fetch('http://localhost:5000/save-attendence', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getToken() // Ensure token is sent with the request
+                    },
+                    body: JSON.stringify({
+                        rollno: rollno,
+                        date: date,
+                        attendence: attendance,
+                        purpose: purpose
+                    })
+                })
+                    .then(res => {
+                        if (res.status === 400) {
+                            throw new Error('Duplicate'); // Handle duplicate attendance entries
+                        } else if (!res.ok) {
+                            throw new Error('Failed to save attendance.');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.message === 'Duplicate' && !hasAlertedForDuplicate) {
+                            alert("Duplicate values are not allowed");
+                            hasAlertedForDuplicate = true;  // Set flag to avoid multiple alerts
+                            return;
+                        } else if (data.message === 'success' && !hasAlertedForSave) {
+                            alert("Saved Attendance successfully");
+                            hasAlertedForSave = true;  // Set flag to avoid multiple success alerts
+                        }
+
+                        savedDates.add(date); // Track the saved date
+                        document.getElementById('button-group').style.display = 'none';  // Hide save buttons
+                    })
+                    .catch(err => {
+                        if (err.message !== 'Duplicate') {
+                            alert('Error saving attendance: ' + err.message);
+                        }
+                    });
+            });
+        }
+
+        function cancelAttendance() {
+            if (confirm('Are you sure you want to cancel? All unsaved changes will be lost.')) {
+                fetchAttendanceData(new Date().toISOString().split('T')[0]); // Reload attendance data
+                document.getElementById('button-group').style.display = 'none'; // Hide buttons if needed
+            }
+        }
+
+        function updateAttendance(selectElem) {
+            const row = selectElem.closest('tr');
+            const purposeCell = row.querySelector('td:last-child p');
+            const attendanceValue = selectElem.value;
+
+            if (attendanceValue === 'present') {
+                purposeCell.innerText = 'Study';
+                purposeCell.contentEditable = 'false';
+            } else if (attendanceValue === 'absent') {
+                purposeCell.innerText = '';
+                purposeCell.contentEditable = 'true';
+                purposeCell.addEventListener('input', () => {
+                    checkIfAllFieldsAreFilled();
+                });
+            } else {
+                purposeCell.innerText = '';
+                purposeCell.contentEditable = 'false';
+            }
+            checkIfAllFieldsAreFilled();
+        }
+
+        function checkIfAllFieldsAreFilled() {
+            const rows = document.querySelectorAll('#attendance-list tr');
+            let allFilled = true;
+
+            rows.forEach(row => {
+                const selectElem = row.querySelector('td:nth-child(3) select');
+                const purposeCell = row.querySelector('td:last-child p');
+                const attendanceValue = selectElem.value;
+
+                if (attendanceValue === '-1' || (attendanceValue === 'absent' && purposeCell.innerText.trim() === '')) {
+                    allFilled = false;
+                }
+            });
+
+            document.getElementById('button-group').style.display = allFilled ? 'block' : 'none';
+        }
+
+        function updateButtonVisibility(date) {
+            if (savedDates.has(date)) {
+                document.getElementById('button-group').style.display = 'none';
+            } else {
+                checkIfAllFieldsAreFilled();
+            }
+        }
+
+
+        function loadStudentAttendance() {
+    // Fetch attendance data with Authorization header
+            fetch('http://localhost:5000/student-attendence', {
+                method: 'GET',
+                headers: {
+                    'Authorization': getToken(), // Include JWT token in the request header
+                },
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    
+                    const presentListBody = document.getElementById('present-list-body');
+                    const absentListBody = document.getElementById('absent-list-body');
+
+                    // Clear previous content
+                    presentListBody.innerHTML = '';
+                    absentListBody.innerHTML = '';
+
+                    // Get today's date in 'YYYY-MM-DD' format
+                    const today = new Date().toISOString().split('T')[0];
+
+                    if (Array.isArray(data) && data.length > 0) {
+                        data.forEach(item => {
+                            // Check if the attendance record is for today
+                            if (item.date === today) {
+                                const row = `<tr>
+                            <td>${item.rollNo}</td>
+                            <td>${item.date || 'N/A'}</td>
+                            <td>${item.attendence}</td>
+                            ${item.attendence === 'absent' ? `<td>${item.purpose || ''}</td>` : ''}
+                        </tr>`;
+
+                                // Insert row in the correct list based on attendance
+                                if (item.attendence === 'present') {
+                                    presentListBody.insertAdjacentHTML('beforeend', row);
+                                } else if (item.attendence === 'absent') {
+                                    absentListBody.insertAdjacentHTML('beforeend', row);
+                                }
+                            }
+                        });
+
+                        // Handle the case where there are no presences today
+                        if (presentListBody.children.length === 0) {
+                            presentListBody.innerHTML = '<tr><td colspan="4" class="text-center">No presences recorded today.</td></tr>';
+                        }
+
+                        // Handle the case where there are no absentees today
+                        if (absentListBody.children.length === 0) {
+                            absentListBody.innerHTML = '<tr><td colspan="4" class="text-center">No absences recorded today.</td></tr>';
+                        }
+                    } else {
+                        // If no data is returned, display no attendance available message
+                        presentListBody.innerHTML = '<tr><td colspan="3" class="text-center">No attendance data available.</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    console.error('Error loading student attendance:', err);
+                    alert('Failed to load student attendance.');
+                });
+        }
+
+
+        function searchStudent() {
+        const rollno = document.getElementById('search-rollno').value.trim();
+    document.getElementById('stdId').innerText = '';
+
+    // Validate input
+    if (!rollno) {
+        alert('Please enter a student ID.');
+        return;
+    }
+    if (rollno.length !== 10) {
+        document.getElementById('stdId').innerText = "Enter a valid student ID";
+        return;
+    }
+
+    fetch(`http://localhost:5000/search-attendence/${rollno}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': getToken(), // Add the bearer token to the headers
+            'Content-Type': 'application/json'  // Ensure proper content type
+        }
+    })
+    .then(res => {
+        if (res.status === 404) {
+            throw new Error('Student ID not found.');
+        } else if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return res.json();
+    })
+    .then(data => {
+        const searchResults = document.getElementById('search-results');
+        const searchPresentBody = document.getElementById('search-present-body');
+        const searchAbsentBody = document.getElementById('search-absent-body');
+
+        // Clear previous results
+        searchResults.style.display = 'block';
+        searchPresentBody.innerHTML = '';
+        searchAbsentBody.innerHTML = '';
+
+        let hasPresent = false;
+        let hasAbsent = false;
+
+        if (Array.isArray(data) && data.length > 0) {
+            data.forEach(item => {
+                const row = `<tr>
+                    <td>${item.rollNo}</td>
+                    <td>${item.date}</td>
+                    <td>${item.attendence}</td>
+                    ${item.attendence === 'absent' ? `<td>${item.purpose || ''}</td>` : '<td>Study</td>'}
+                </tr>`;
+
+                if (item.attendence === 'present') {
+                    searchPresentBody.insertAdjacentHTML('beforeend', row);
+                    hasPresent = true;
+                } else if (item.attendence === 'absent') {
+                    searchAbsentBody.insertAdjacentHTML('beforeend', row);
+                    hasAbsent = true;
+                }
+            });
+
+            if (!hasPresent) {
+                searchPresentBody.innerHTML = '<tr><td colspan="4" class="text-center">No presences recorded in your history.</td></tr>';
+            }
+
+            if (!hasAbsent) {
+                searchAbsentBody.innerHTML = '<tr><td colspan="4" class="text-center">No absences recorded in your history.</td></tr>';
+            }
+        } else {
+            searchResults.innerHTML = '<div class="alert alert-info" role="alert">No records found for this student ID.</div>';
+        }
+    })
+    .catch(err => {
+        const searchResults = document.getElementById('search-results');
+        searchResults.style.display = 'block';
+        if (searchResults) {
+            searchResults.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    ${err.message}
+                </div>`;
+        } else {
+            console.error('searchResults element not found');
+        }
+    });
+}
+  
+        document.addEventListener('DOMContentLoaded', () => {
+            let data = JSON.parse(localStorage.getItem("token"));
+
+            if (!data) {
+                window.location.href = 'index.html'
+                return
+            }
+            loadStudentList(); // Load the student list when the page loads
+        });
+
+        async function loadStudentList() {
+            const studentListElement = document.getElementById('student-list');
+            studentListElement.innerHTML = '';  // Clear any existing content
+
+            try {
+
+                // Fetch student data from the backend with the token in Authorization header
+                const response = await fetch('http://localhost:5000/students', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getToken() // Send the token in the Authorization header
+                    }
+                });
+
+                // Check if the response is ok (status code 200-299)
+                if (!response.ok) {
+                    throw new Error('Failed to load students');
+                }
+
+                // Parse the response JSON data
+                const students = await response.json();
+
+                // Check if there are no students
+                if (students.length === 0) {
+                    studentListElement.innerHTML = '<li class="list-group-item">No students available</li>';
+                    return;
+                }
+
+                // Loop through the students and create list items
+                students.forEach(student => {
+                    // Assume student contains rollno and sname, adjust if necessary
+                    const listItem = document.createElement('a');
+                    listItem.className = 'list-group-item list-group-item-action';
+                    listItem.href = '#';
+                    listItem.dataset.id = student.rollno;  // Store roll number in dataset for later use
+                    listItem.dataset.name = student.sname; // Store student name in dataset for later use
+                    listItem.textContent = `${student.sname} (ID: ${student.rollno})`;
+
+                    // Add event listener to show chat on click
+                    listItem.addEventListener('click', () => {
+                        showChat(student.rollno, student.sname);  // Show the chat window with the selected student
+                    });
+
+                    // Append the list item to the student list
+                    studentListElement.appendChild(listItem);
+                });
+
+                // Make sure the student list is visible
+                document.querySelector('.student-list').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading student list:', error);
+                alert('Failed to load student list.');
+            }
+        }
+
+        let lastMessageDate = ''; // Variable to store the last date label
+        let stdid = ''; // Store the student ID globally
+
+        async function showChat(studentId, studentName) {
+            // Hide the student list and show the chat container
+            document.querySelector('.student-list').style.display = 'none';
+            document.querySelector('.chat-container').style.display = 'block';
+
+            // Set the chat header to display the student information
+            document.getElementById('chat-header').textContent = `Chat with ${studentName} (ID: ${studentId})`;
+
+            // Set the global studentId for future use
+            stdid = studentId;
+
+            // Assuming the mentorId is dynamically available (e.g., from the logged-in user context)
+            const mentorId = '22jn1a05d1-g5';  // Replace this with actual dynamic logic to fetch the mentor ID
+            try {
+                // Fetch the chat history from the server by passing both studentId and mentorId
+                const response = await fetch(`http://localhost:5000/chat-history/${studentId}/${mentorId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': getToken() // Include the JWT token in the Authorization header
+                    }
+                });
+
+                // If the response is not OK, throw an error
+                if (!response.ok) {
+                    throw new Error('Failed to load chat history');
+                }
+
+                // Parse the response as JSON to get the chat history
+                const chatHistory = await response.json();
+
+                // Call a function to load and display the chat history
+                loadChatHistory(chatHistory);
+            } catch (error) {
+                console.error('Error fetching chat history:', error);
+                alert('Failed to load chat history.');
+            }
+        }
+
+        function loadChatHistory(chatHistory) {
+            const chatWindow = document.getElementById('chat-window');
+            chatWindow.innerHTML = ''; // Clear previous messages
+            let lastMessageDate = null;
+
+            chatHistory.forEach(messageData => {
+                const messageDate = new Date(messageData.timestamp);
+                const messageDay = messageDate.toDateString();
+
+
+                appendMessage(messageData.sender, messageData.message, messageData.type, messageData.timestamp);
+            });
+
+            chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to the bottom
+        }
+
+        const ws = new WebSocket('ws://localhost:8081'); // Update with your WebSocket server URL
+
+        ws.onmessage = function (event) {
+             try {
+                // Check if the incoming message starts with a valid JSON character
+                if (event.data.startsWith('{') ) {
+                    const messageData = JSON.parse(event.data);
+                   
+                    appendMessage(messageData.sender, messageData.message, messageData.type, messageData.timestamp);
+                } else {
+                    console.error('Received non-JSON message');
+                }
+            } catch (error) {
+                console.error('Error parsing message:', error);
+                console.error('Raw message:'); // Log the raw message for debugging
+            }
+        };
+
+
+        document.getElementById('chat-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            const timestamp = new Date().toISOString();
+
+            if (message) {
+                appendMessage('You', message, 'mentor', timestamp);
+                sendMessage(message, timestamp);
+                input.value = '';
+            }
+        });
+
+        async function sendMessage(message, timestamp) {
+            ws.send(JSON.stringify({
+                type: 'chat',
+                sender: 'Mentor',
+                message: message,
+                timestamp: timestamp,
+                studentId: stdid
+            }));
+
+            try {
+                // Send the message to the backend to be stored in the database
+                const response = await fetch('http://localhost:5000/save-message', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': getToken() // Include the JWT token in the request header
+                    },
+                    body: JSON.stringify({
+                        mentorId: '22jn1a05d1-g5', // Replace with the actual mentorId dynamically
+                        studentId: stdid,          // stdid should be set globally when you select the student
+                        message: message,
+                        timestamp: timestamp,
+                        type: 'mentor'             // Assuming 'mentor' is the message type. Adjust if needed.
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save the message');
+                }
+
+                // Parse the response to handle it
+                const result = await response.json();
+            } catch (error) {
+                console.error('Error saving message:', error);
+                alert('Failed to send the message.');
+            }
+        }
+
+        document.getElementById('back-to-students').addEventListener('click', () => {
+            document.querySelector('.student-list').style.display = 'block';
+            document.querySelector('.chat-container').style.display = 'none';
+        });
+
+        function appendMessage(sender, message, type, timestamp) {
+            const chatWindow = document.getElementById('chat-window');
+            const messageDate = new Date(timestamp);
+            const messageDay = messageDate.toDateString();
+
+            if (lastMessageDate !== messageDay) {
+                const dateLabel = document.createElement('div');
+                dateLabel.className = 'date-label';
+                dateLabel.innerText = messageDay;
+                chatWindow.appendChild(dateLabel);
+                lastMessageDate = messageDay;
+            }
+
+            const messageElement = document.createElement('div');
+            messageElement.className = `chat-message ${type}`;
+            messageElement.innerHTML = `
+        <div>${message}</div>
+        <div class="timestamp">${messageDate.toLocaleTimeString()}</div>
+    `;
+
+            chatWindow.appendChild(messageElement);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+    </script>
+
+</body>
+
+</html>
