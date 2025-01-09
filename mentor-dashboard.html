@@ -349,7 +349,7 @@
 
 
         function fetchAttendanceData(date) {
-            fetch('http://localhost:5000/attendence-list', {
+            fetch('https://attendance-ruz0.onrender.com/attendence-list', {
                 method: 'GET',
                 headers: {
                     'Authorization': getToken() // Include token if needed for authentication
@@ -415,7 +415,7 @@
                     return;
                 }
 
-                fetch('http://localhost:5000/save-attendence', {
+                fetch('https://attendance-ruz0.onrender.com/save-attendence', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -513,7 +513,7 @@
 
         function loadStudentAttendance() {
     // Fetch attendance data with Authorization header
-            fetch('http://localhost:5000/student-attendence', {
+            fetch('https://attendance-ruz0.onrender.com/student-attendence', {
                 method: 'GET',
                 headers: {
                     'Authorization': getToken(), // Include JWT token in the request header
@@ -590,7 +590,7 @@
         return;
     }
 
-    fetch(`http://localhost:5000/search-attendence/${rollno}`, {
+    fetch(`https://attendance-ruz0.onrender.com/search-attendence/${rollno}`, {
         method: 'GET',
         headers: {
             'Authorization': getToken(), // Add the bearer token to the headers
@@ -678,7 +678,7 @@
             try {
 
                 // Fetch student data from the backend with the token in Authorization header
-                const response = await fetch('http://localhost:5000/students', {
+                const response = await fetch('https://attendance-ruz0.onrender.com/students', {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -746,7 +746,7 @@
             const mentorId = '22jn1a05d1-g5';  // Replace this with actual dynamic logic to fetch the mentor ID
             try {
                 // Fetch the chat history from the server by passing both studentId and mentorId
-                const response = await fetch(`http://localhost:5000/chat-history/${studentId}/${mentorId}`, {
+                const response = await fetch(`https://attendance-ruz0.onrender.com/chat-history/${studentId}/${mentorId}`, {
                     method: 'GET',
                     headers: {
                         'Authorization': getToken() // Include the JWT token in the Authorization header
@@ -828,7 +828,7 @@
 
             try {
                 // Send the message to the backend to be stored in the database
-                const response = await fetch('http://localhost:5000/save-message', {
+                const response = await fetch('https://attendance-ruz0.onrender.com/save-message', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
