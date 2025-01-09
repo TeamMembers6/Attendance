@@ -388,7 +388,7 @@ function mentorChangePassword() {
         const isAdmin = data.isAdmin;
         
         
-        fetch('https://attendence-2968.onrender.com/mentor-change-password', {
+        fetch('https://attendance-ruz0.onrender.com/mentor-change-password', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -446,7 +446,7 @@ function studentChangePassword() {
         let data = JSON.parse(localStorage.getItem("token"));
         
         
-        fetch('https://attendence-2968.onrender.com/student-change-password', {
+        fetch('https://attendance-ruz0.onrender.com/student-change-password', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -488,7 +488,7 @@ function check() {
     }
 
     if (valid) {
-        fetch('https://attendence-2968.onrender.com/login', {
+        fetch('https://attendance-ruz0.onrender.com/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ rollno: ID, password: PWD })
@@ -529,7 +529,7 @@ function mentorCheck() {
     }
 
     if (valid) {
-        fetch('https://attendence-2968.onrender.com/mentor-login', {
+        fetch('https://attendance-ruz0.onrender.com/mentor-login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mentorId: mentorId, mentorPwd: mentorPwd })
